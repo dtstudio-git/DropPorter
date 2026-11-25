@@ -1,0 +1,4 @@
+#define DROPPORTER_RUNTIME
+#include "DropPorterIcon.rc"
+
+101 RCDATA "DropPorterNdisCapSession.ps1"

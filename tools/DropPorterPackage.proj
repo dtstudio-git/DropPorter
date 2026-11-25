@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Package" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PackageRoot Condition="'$(PackageRoot)'==''">$(MSBuildThisFileDirectory)..\artifacts\DropPorter-0.1.0-Windows-x64\</PackageRoot>
+    <PublishRoot>$(MSBuildThisFileDirectory)..\ui\DropPorter.Wpf\obj\DropPorterPackage\</PublishRoot>
+  </PropertyGroup>
+  <Target Name="Build">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)DropPorterWpf.proj" Targets="BuildNative" />
+    <Exec Command="dotnet publish &quot;$(MSBuildThisFileDirectory)..\ui\DropPorter.Wpf\DropPorter.Wpf.csproj&quot; -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --output &quot;$(PublishRoot).&quot;" />
+  </Target>
+  <Target Name="CheckNativePackageRoot">
+    <Error Condition="Exists('$(PackageRoot)USBPcap') or Exists('$(PackageRoot)sources\usbpcap-src-incl-pdb-1.5.4.0.7z') or Exists('$(PackageRoot)licenses\USBPcap-GPL-2.0.txt') or Exists('$(PackageRoot)licenses\USBPcap-BSD-2-Clause.txt') or Exists('$(PackageRoot)licenses\USBPcap-Notice.md')"
+           Text="PackageRoot contains older USBPcap files. Set PackageRoot to a new output directory." />
+    <Error Condition="Exists('$(PackageRoot)DropPorterSetup.exe')"
+           Text="PackageRoot contains DropPorterSetup.exe from a previous release. Set PackageRoot to a new output directory." />
+    <Error Condition="Exists('$(PackageRoot)DropPorterBridge.dll') or Exists('$(PackageRoot)dependencies')"
+           Text="PackageRoot contains files from the previous WPF layout. Set PackageRoot to a new output directory." />
+    <Error Condition="Exists('$(PackageRoot)DropPorterRuntime.exe') or Exists('$(PackageRoot)tx10ub') or Exists('$(PackageRoot)runtime\tx10ub') or Exists('$(PackageRoot)Tx10ubProbe.exe') or Exists('$(PackageRoot)Tx10ubReceiveWorker.exe')"
+           Text="PackageRoot uses a previous layout. Set PackageRoot to a new output directory." />
+    <Error Condition="Exists('$(PackageRoot)AWDLWinTx10ubProbe.sys') or Exists('$(PackageRoot)tx10ub-probe.inf') or Exists('$(PackageRoot)tx10ub-probe.cat')"
+           Text="PackageRoot contains legacy custom Probe driver files. Remove only these obsolete files from the package output before staging the native package: AWDLWinTx10ubProbe.sys, tx10ub-probe.inf, tx10ub-probe.cat." />
+  </Target>
+  <Target Name="Stage" DependsOnTargets="CheckNativePackageRoot;Build">
+    <ItemGroup>
+      <Payload Include="$(PublishRoot)DropPorter.exe" />
+      <Payload Include="$(MSBuildThisFileDirectory)..\LICENSE" />
+      <Payload Include="$(MSBuildThisFileDirectory)..\docs\DropPorter_Readme.txt" />
+      <RuntimePayload Include="$(PublishRoot)runtime\DropPorterBridge.dll" />
+      <RuntimePayload Include="$(MSBuildThisFileDirectory)x64\DropPorterRuntime\Release\DropPorterRuntime.exe" />
+      <HelperPayload Include="$(MSBuildThisFileDirectory)x64\Tx10ubReceiveWorker\Release\Tx10ubReceiveWorker.exe" ProductFileName="DropPorterFileReceiver.exe" />
+      <HelperPayload Include="$(MSBuildThisFileDirectory)x64\Tx10ubProbe\AwdlFormat\Release\Tx10ubProbe.exe" ProductFileName="DropPorterWireless.exe" />
+    </ItemGroup>
+    <MakeDir Directories="$(PackageRoot);$(PackageRoot)licenses" />
+    <Copy SourceFiles="@(Payload)" DestinationFolder="$(PackageRoot)" />
+    <Copy SourceFiles="@(RuntimePayload)" DestinationFolder="$(PackageRoot)runtime" />
+    <Copy SourceFiles="@(HelperPayload)" DestinationFiles="@(HelperPayload->'$(PackageRoot)runtime\%(ProductFileName)')" />
+    <Copy SourceFiles="$(PublishRoot)licenses\dotnet-LICENSE.txt;$(PublishRoot)licenses\dotnet-THIRD-PARTY-NOTICES.txt;$(PublishRoot)licenses\dotnet-windowsdesktop-LICENSE.txt;$(PublishRoot)licenses\WindowsAppSDK-LICENSE.txt" DestinationFolder="$(PackageRoot)licenses" />
+    <Copy SourceFiles="$(PublishRoot)licenses\CoreJ2K-LICENSE.txt;$(PublishRoot)licenses\CoreJ2K-COPYRIGHT-JJ2000-5.1.txt" DestinationFolder="$(PackageRoot)licenses" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\third_party\lwip\COPYING" DestinationFiles="$(PackageRoot)licenses\lwip.txt" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\third_party\zlib\LICENSE" DestinationFiles="$(PackageRoot)licenses\zlib.txt" />
+  </Target>
+  <Target Name="Package" DependsOnTargets="Stage" />
+</Project>

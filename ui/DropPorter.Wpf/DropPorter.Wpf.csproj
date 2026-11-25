@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework><UseWPF>true</UseWPF><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><PlatformTarget>x64</PlatformTarget><AssemblyName>DropPorter</AssemblyName><ApplicationManifest>app.manifest</ApplicationManifest><ApplicationIcon>DropPorter.ico</ApplicationIcon>
+    <Product>Drop Porter</Product>
+    <Version>0.1.0</Version>
+    <AssemblyTitle>Drop Porter</AssemblyTitle>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <EnableMsixTooling Condition="'$(PublishSingleFile)' == 'true'">true</EnableMsixTooling>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+  <ItemGroup><PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="2.7.0" GeneratePathProperty="true" /></ItemGroup>
+  <ItemGroup><PackageReference Include="CoreJ2K" Version="2.4.1.108" GeneratePathProperty="true" /></ItemGroup>
+  <ItemGroup><Content Include="..\..\tools\x64\DropPorterBridge\Release\DropPorterBridge.dll" Link="runtime\DropPorterBridge.dll" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" /></ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\tools\x64\DropPorterRuntime\Release\DropPorterRuntime.exe" Link="DropPorterRuntime.exe" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\tools\x64\Tx10ubProbe\AwdlFormat\Release\Tx10ubProbe.exe" Link="DropPorterWireless.exe" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\tools\x64\Tx10ubReceiveWorker\Release\Tx10ubReceiveWorker.exe" Link="DropPorterFileReceiver.exe" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <Content Update="..\..\tools\x64\DropPorterRuntime\Release\DropPorterRuntime.exe;..\..\tools\x64\Tx10ubProbe\AwdlFormat\Release\Tx10ubProbe.exe;..\..\tools\x64\Tx10ubReceiveWorker\Release\Tx10ubReceiveWorker.exe" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+  <ItemGroup><Resource Include="DropPorter.ico" /></ItemGroup>
+  <Target Name="CopyRuntimeLicenses" AfterTargets="Publish" Condition="'$(SelfContained)' == 'true' and '$(PublishSingleFile)' == 'true'">
+    <ItemGroup>
+      <NetCoreRuntimePack Include="@(ResolvedRuntimePack->WithMetadataValue('FrameworkName', 'Microsoft.NETCore.App'))" />
+      <WindowsDesktopRuntimePack Include="@(ResolvedRuntimePack->WithMetadataValue('FrameworkName', 'Microsoft.WindowsDesktop.App'))" />
+    </ItemGroup>
+    <Copy SourceFiles="@(NetCoreRuntimePack->'%(PackageDirectory)\LICENSE.TXT')"
+          DestinationFiles="$(PublishDir)licenses\dotnet-LICENSE.txt" />
+    <Copy SourceFiles="@(NetCoreRuntimePack->'%(PackageDirectory)\THIRD-PARTY-NOTICES.TXT')"
+          DestinationFiles="$(PublishDir)licenses\dotnet-THIRD-PARTY-NOTICES.txt" />
+    <Copy SourceFiles="@(WindowsDesktopRuntimePack->'%(PackageDirectory)\LICENSE')"
+          DestinationFiles="$(PublishDir)licenses\dotnet-windowsdesktop-LICENSE.txt" />
+    <Copy SourceFiles="$(PkgMicrosoft_WindowsAppSDK_Foundation)\license.txt"
+          DestinationFiles="$(PublishDir)licenses\WindowsAppSDK-LICENSE.txt" />
+    <Copy SourceFiles="$(PkgCoreJ2K)\LICENSE;$(PkgCoreJ2K)\COPYRIGHT-JJ2000-5.1"
+          DestinationFiles="$(PublishDir)licenses\CoreJ2K-LICENSE.txt;$(PublishDir)licenses\CoreJ2K-COPYRIGHT-JJ2000-5.1.txt" />
+  </Target>
+</Project>

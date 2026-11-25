@@ -1,0 +1,20 @@
+.vs/
+out/
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+*.user
+*.suo
+__pycache__/
+*.pyc
+
+# Local evidence, historical archives, and build outputs
+/artifacts/
+/archive/
+**/x64/
+/ui/**/bin/
+/ui/**/obj/
+/tools/AwlWinTestCertProvisioner.exe
+/tools/AwlWinTestCertProvisioner-build.log

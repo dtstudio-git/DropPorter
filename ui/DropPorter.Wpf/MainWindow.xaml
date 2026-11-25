@@ -1,0 +1,141 @@
+<Window x:Class="DropPorter.Wpf.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:DropPorter.Wpf" Style="{StaticResource {x:Type Window}}" Title="Drop Porter" Icon="DropPorter.ico" Width="{StaticResource WindowWidth}" Height="{StaticResource WindowHeight}" MinWidth="{StaticResource MinimumWidth}" MinHeight="{StaticResource MinimumHeight}" SourceInitialized="InitializeNative" Closing="WindowClosing" Closed="WindowClosed" AllowDrop="True" DragEnter="FileDragOver" DragOver="FileDragOver" Drop="FileDrop">
+  <Window.Resources>
+    <local:PathPartConverter x:Key="PathPart" /><local:ActionStyleConverter x:Key="ActionStyle" />
+    <DataTemplate x:Key="SendTargetDetails">
+      <StackPanel MaxWidth="{StaticResource MinimumWidth}">
+        <TextBlock Text="{Binding Name}" Style="{StaticResource FieldValue}" />
+        <TextBlock Text="{Binding FullAddress}" Style="{StaticResource FieldSecondary}" />
+      </StackPanel>
+    </DataTemplate>
+    <DataTemplate x:Key="SendTarget">
+      <Grid Background="Transparent">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+        <Grid.ToolTip>
+          <ToolTip Content="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                   ContentTemplate="{StaticResource SendTargetDetails}" />
+        </Grid.ToolTip>
+        <TextBlock Text="{Binding Name}" Style="{StaticResource FieldValue}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="1" Text="{Binding Suffix}" Style="{StaticResource FieldSecondary}" Margin="{StaticResource ActionGap}" TextWrapping="NoWrap" />
+      </Grid>
+    </DataTemplate>
+  </Window.Resources>
+  <Window.TaskbarItemInfo><TaskbarItemInfo x:Name="Taskbar" /></Window.TaskbarItemInfo>
+  <local:TransferTabControl x:Name="TransferTabs">
+    <local:TransferTabControl.RecoveryContent>
+      <Border x:Name="RecoveryNotice" Style="{StaticResource RecoveryBanner}" Visibility="Collapsed" AutomationProperties.Name="Wi-Fiの復旧">
+        <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+          <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+          <TextBlock Text="&#xE701;" Style="{StaticResource RecoveryBannerIcon}" />
+          <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <TextBlock Text="Wi-Fiの復旧" Style="{StaticResource RecoveryBannerHeading}" />
+            <local:StatusLine x:Name="RecoveryStatusLine">
+              <TextBlock x:Name="RecoveryStatus" Style="{StaticResource FieldSecondary}" AutomationProperties.LiveSetting="Polite" />
+            </local:StatusLine>
+          </StackPanel>
+          <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+            <Button x:Name="RecoveryButton" Content="Wi-Fiを元に戻す" Click="RestoreWifi" Style="{StaticResource Primary}" />
+            <Button x:Name="DismissRecoveryButton" Content="接続済み" AutomationProperties.Name="Wi-Fiの接続を確認しました" Click="DismissRecovery" Style="{StaticResource RecoveryDismissAction}" />
+          </StackPanel>
+          <Control x:Name="RecoveryDriverHelp" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Template="{StaticResource DriverRollbackHelp}" Visibility="Collapsed" />
+        </Grid>
+      </Border>
+    </local:TransferTabControl.RecoveryContent>
+      <TabItem Header="送信"><Grid>
+        <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <Border Style="{StaticResource ScrollableCard}" Margin="{StaticResource SectionGap}"><ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel Style="{StaticResource CardContent}">
+        <TextBlock Text="ファイル" Style="{StaticResource Label}" />
+        <Border Style="{StaticResource ValueField}" AutomationProperties.Name="送信するファイル"><Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+          <TextBlock Text="&#xE8A5;" Style="{StaticResource FieldIcon}" AutomationProperties.Name="ファイル" />
+          <StackPanel Grid.Column="1" VerticalAlignment="Center">
+          <StackPanel Visibility="{Binding Send.HasFile, Converter={StaticResource Visible}}">
+            <TextBlock Text="{Binding Send.SendFileCount, StringFormat={}{0}件}" Style="{StaticResource FieldValue}" />
+            <TextBlock Text="{Binding Send.SendSelectionSize}" Style="{StaticResource CaptionText}" />
+          </StackPanel>
+          <TextBlock Text="ファイルを選ぶか、ここへドラッグしてください。" Style="{StaticResource FieldSecondary}" Visibility="{Binding Send.HasNoFile, Converter={StaticResource Visible}}" />
+          </StackPanel>
+          <Button Grid.Column="2" Content="{Binding Send.FilePickLabel}" AutomationProperties.Name="送信するファイルを選ぶ" IsEnabled="{Binding Send.CanChoose}" Click="ChooseSendFile" VerticalAlignment="Center" />
+        </Grid></Border>
+        <ListBox Style="{StaticResource SendFileList}" ItemsSource="{Binding Send.SendFiles}" Visibility="{Binding Send.HasFile, Converter={StaticResource Visible}}" AutomationProperties.Name="送信するファイル一覧">
+          <ListBox.ItemTemplate><DataTemplate><DockPanel ToolTip="{Binding}">
+            <Button DockPanel.Dock="Right" Content="外す" AutomationProperties.Name="このファイルを外す" IsEnabled="{Binding DataContext.Send.CanChoose, RelativeSource={RelativeSource AncestorType=ListBox}}" Click="RemoveSendFile" />
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{Binding Converter={StaticResource PathPart}, ConverterParameter=Name}" Style="{StaticResource FieldValue}" />
+              <TextBlock Text="{Binding Converter={StaticResource PathPart}, ConverterParameter=Folder}" Style="{StaticResource FieldSecondary}" />
+            </StackPanel>
+          </DockPanel></DataTemplate></ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Visibility="{Binding Send.ShowTargetSection, Converter={StaticResource Visible}}">
+        <DockPanel>
+          <Button DockPanel.Dock="Right" Content="再読み込み" AutomationProperties.Name="送信先を再読み込み" Click="RefreshTargets" Visibility="{Binding Send.CanRefreshTargets, Converter={StaticResource Visible}}" />
+          <TextBlock Text="送信先" Style="{StaticResource Label}" VerticalAlignment="Center" />
+        </DockPanel>
+        <Border Style="{StaticResource ValueField}" Visibility="{Binding Send.ShowTargetSummary, Converter={StaticResource Visible}}">
+          <ContentControl Content="{Binding Send.SelectedTarget}" ContentTemplate="{StaticResource SendTarget}" HorizontalContentAlignment="Stretch" />
+        </Border>
+        <ListBox ItemsSource="{Binding Send.Targets}" ItemTemplate="{StaticResource SendTarget}" ItemContainerStyle="{StaticResource SendTargetRow}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectedIndex="{Binding Send.Selected, Mode=TwoWay}" IsEnabled="{Binding Send.CanSelect}" AutomationProperties.Name="送信先" SelectionChanged="TargetChanged" MouseDoubleClick="TargetDoubleClick" Visibility="{Binding Send.ShowItems, Converter={StaticResource Visible}}" />
+        </StackPanel>
+        <ContentControl Content="{Binding Send}" ContentTemplate="{StaticResource TransferProgress}" />
+        <Border Style="{StaticResource ValueField}" Visibility="{Binding Send.ShowDetails, Converter={StaticResource Visible}}" AutomationProperties.Name="送信の詳細"><TextBlock Text="{Binding Send.Details}" Style="{StaticResource FieldValue}" /></Border>
+        <ContentControl Content="{Binding Send}" ContentTemplate="{StaticResource TransferResult}" />
+        <ContentControl Content="{Binding Send}" ContentTemplate="{StaticResource SearchHelp}" Visibility="{Binding Send.ShowSearchHelp, Converter={StaticResource Visible}}" />
+      </StackPanel></ScrollViewer></Border>
+      <Border Grid.Row="1" Style="{StaticResource ActionFooter}"><Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+        <local:StatusLine IsBusy="{Binding Send.ShowBusyRing}">
+          <TextBlock Text="{Binding Send.SendFooterText}" Style="{StaticResource FooterNote}" />
+        </local:StatusLine>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"><Button Content="{Binding Send.Action}" Style="{StaticResource Primary}" IsDefault="True" IsEnabled="{Binding Send.CanAct}" Click="SendAction" /><Button Content="{Binding Send.Cancel}" IsEnabled="{Binding Send.CanCancel}" Visibility="{Binding Send.ShowCancel, Converter={StaticResource Visible}}" Click="SendCancel" /></StackPanel>
+      </Grid></Border></Grid></TabItem>
+      <TabItem Header="受信"><Grid>
+        <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <Border Style="{StaticResource ScrollableCard}" Margin="{StaticResource SectionGap}"><ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel Style="{StaticResource CardContent}">
+        <TextBlock Text="保存先" Style="{StaticResource Label}" />
+        <Border Style="{StaticResource ValueField}" AutomationProperties.Name="保存先"><Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+          <TextBlock Text="&#xE8B7;" Style="{StaticResource FieldIcon}" AutomationProperties.Name="フォルダー" />
+          <TextBlock Grid.Column="1" Text="{Binding Receive.FilePath}" Style="{StaticResource FieldValue}" VerticalAlignment="Center" />
+          <StackPanel Grid.Column="2" Orientation="Horizontal"><Button Content="変更" AutomationProperties.Name="保存先を変更" IsEnabled="{Binding Receive.CanChoose}" Click="ChooseReceiveFolder" /><Button Content="開く" AutomationProperties.Name="保存先を開く" IsEnabled="{Binding Receive.CanOpenFolder}" Click="OpenFolder" /></StackPanel>
+        </Grid></Border>
+        <StackPanel Visibility="{Binding Receive.HasPeer, Converter={StaticResource Visible}}">
+          <TextBlock Text="送信者" Style="{StaticResource Label}" /><TextBlock Text="{Binding Receive.Peer}" Style="{StaticResource BodyText}" />
+        </StackPanel>
+        <Border Style="{StaticResource AttentionCard}" Visibility="{Binding Receive.IsIncoming, Converter={StaticResource Visible}}" AutomationProperties.Name="受信の確認"><StackPanel>
+          <StackPanel Margin="{StaticResource SectionGap}" Visibility="{Binding Receive.HasOfferPreview, Converter={StaticResource Visible}}">
+            <TextBlock Text="プレビュー" Style="{StaticResource Label}" />
+            <Image Source="{Binding Receive.OfferPreview}" Style="{StaticResource OfferPreview}" AutomationProperties.Name="受信依頼のプレビュー" />
+          </StackPanel>
+          <StackPanel Margin="{StaticResource SectionGap}">
+            <TextBlock Text="{Binding Receive.OfferFileCount, StringFormat={}{0}件}" Style="{StaticResource FieldValue}" />
+            <TextBlock Text="{Binding Receive.OfferSize}" Style="{StaticResource CaptionText}" />
+          </StackPanel>
+          <TextBlock Text="ファイル" Style="{StaticResource Label}" /><ScrollViewer Style="{StaticResource OfferDetails}"><TextBlock Text="{Binding Receive.Details}" Style="{StaticResource FieldValue}" /></ScrollViewer>
+        </StackPanel></Border>
+        <StackPanel Visibility="{Binding Receive.ShowRegular, Converter={StaticResource Visible}}">
+          <ContentControl Content="{Binding Receive}" ContentTemplate="{StaticResource TransferProgress}" />
+          <Border Style="{StaticResource ValueField}" Visibility="{Binding Receive.ShowDetails, Converter={StaticResource Visible}}" AutomationProperties.Name="受信の詳細"><TextBlock Text="{Binding Receive.Details}" Style="{StaticResource FieldValue}" /></Border>
+          <ContentControl Content="{Binding Receive}" ContentTemplate="{StaticResource TransferResult}" />
+        </StackPanel>
+        <StackPanel Visibility="{Binding Receive.HasSavedFiles, Converter={StaticResource Visible}}">
+        <TextBlock Text="保存したファイル" Style="{StaticResource Label}" />
+        <ListBox ItemsSource="{Binding Receive.Items}" SelectedIndex="{Binding Receive.Selected, Mode=TwoWay}" SelectionChanged="SavedFileChanged" MouseDoubleClick="SavedFileDoubleClick" AutomationProperties.Name="保存したファイル">
+          <ListBox.ItemTemplate><DataTemplate><StackPanel ToolTip="{Binding}">
+            <TextBlock Text="{Binding Converter={StaticResource PathPart}, ConverterParameter=Name}" Style="{StaticResource FieldValue}" />
+            <TextBlock Text="{Binding Converter={StaticResource PathPart}, ConverterParameter=Folder}" Style="{StaticResource FieldSecondary}" />
+          </StackPanel></DataTemplate></ListBox.ItemTemplate>
+        </ListBox>
+        </StackPanel>
+      </StackPanel></ScrollViewer></Border>
+      <Border Grid.Row="1" Style="{StaticResource ActionFooter}"><Grid>
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+        <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="{StaticResource SectionGap}" Visibility="{Binding Receive.HasSavedActions, Converter={StaticResource Visible}}"><Button Content="フォルダーで表示" Click="ShowInFolder" /><Button Content="ファイルを開く" Style="{StaticResource Primary}" IsEnabled="{Binding Receive.CanOpenFile}" Click="OpenFile" /></StackPanel>
+        <local:StatusLine Grid.Row="1" IsBusy="{Binding Receive.ShowBusyRing}" Visibility="{Binding Receive.ShowReceiveStatus, Converter={StaticResource Visible}}">
+          <TextBlock Text="{Binding Receive.Status}" Style="{StaticResource FooterNote}" />
+        </local:StatusLine>
+        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"><Button Content="{Binding Receive.Action}" Style="{Binding Receive.EmphasizeReceive, Converter={StaticResource ActionStyle}}" IsDefault="{Binding Receive.DefaultReceiveAction}" IsEnabled="{Binding Receive.CanAct}" Click="ReceiveAction" /><Button Content="{Binding Receive.Cancel}" IsEnabled="{Binding Receive.CanCancel}" Visibility="{Binding Receive.ShowCancel, Converter={StaticResource Visible}}" Click="ReceiveCancel" /></StackPanel>
+      </Grid></Border>
+      </Grid></TabItem>
+  </local:TransferTabControl>
+</Window>
