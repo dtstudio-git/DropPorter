@@ -26,6 +26,7 @@ internal enum BridgeCommand : int
     DismissRecovery = 13,
     RecordRecoveryFailure = 14,
     SendToPeer = 15,
+    SetKeepRadio = 16,
 }
 
 internal enum ValueKind : int
@@ -48,6 +49,8 @@ internal enum ValueKind : int
     WifiConnected = 15,
     OfferFileCount = 16,
     SendCompleted = 17,
+    KeepRadio = 18,
+    RestoringRadio = 19,
 }
 
 internal enum TextField : int

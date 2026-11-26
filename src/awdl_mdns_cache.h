@@ -11,6 +11,9 @@ struct Endpoint {
     std::uint16_t port, priority, weight;
     std::vector<wire::Bytes> text;
     std::uint64_t expires_at_us;
+    struct RecordReception {
+        std::uint64_t ptr{},srv{},txt{},aaaa{};
+    } record_received_at_us{};
 };
 struct Snapshot {std::vector<Endpoint> endpoints;bool truncated{};};
 // Passive, source-scoped DNS-SD cache, not an authenticated peer identity or

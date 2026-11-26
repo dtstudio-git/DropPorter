@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DF13A81A-52FA-4BC3-83EA-09C00B2223C7}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Tx10ubProbe</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.28000.0</WindowsTargetPlatformVersion>
+    <TrackFileAccess>false</TrackFileAccess>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <OutDir>$(ProjectDir)..\x64\Tx10ubProbe\Debug\</OutDir>
+    <IntDir>$(ProjectDir)..\x64\Tx10ubProbe\Debug\obj\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <OutDir>$(ProjectDir)..\x64\Tx10ubProbe\Release\</OutDir>
+    <IntDir>$(ProjectDir)..\x64\Tx10ubProbe\Release\obj\</IntDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(EnableAwdlFormatExperiment)'=='true'">
+    <OutDir>$(ProjectDir)..\x64\Tx10ubProbe\AwdlFormat\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)..\x64\Tx10ubProbe\AwdlFormat\$(Configuration)\obj\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32_LEAN_AND_MEAN;NOMINMAX;_WIN32_WINNT=0x0A00;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(EnableAwdlFormatExperiment)'=='true'">AWDLWIN_ENABLE_AWDL_FORMAT_EXPERIMENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\lwip-port;$(ProjectDir)..\..\third_party\lwip\src\include;$(ProjectDir)..\..;$(ProjectDir)..\..\driver\tx10ub-probe;$(UniversalCRT_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>iphlpapi.lib;ole32.lib;oleaut32.lib;uuid.lib;setupapi.lib;cfgmgr32.lib;bcrypt.lib;wlanapi.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Tx10ubProbe.cpp" />
+    <ClCompile Include="Tx10ubProbeDiagnostics.cpp" />
+    <ClInclude Include="Tx10ubProbeDiagnostics.h" />
+    <ClInclude Include="Tx10ubProbeSupport.h" />
+    <ClCompile Include="Tx10ubHost.cpp" />
+    <ClCompile Include="Tx10ubDirectIhv.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="Tx10ubNdisReader.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\driver\tx10ub-probe\tx10ub_action_core.c" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_data.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_ip_receive.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_mdns_cache.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_mdns_query.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_discovery.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_discovery_state.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_peer_state.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_receive.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_sync_election.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_discovery_session.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_availability.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClCompile Include="..\..\src\awdl_schedule.cpp" Condition="'$(EnableAwdlFormatExperiment)'=='true'" />
+    <ClInclude Include="..\..\driver\tx10ub-probe\tx10ub_ioctl.h" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(EnableAwdlFormatExperiment)'=='true'">
+    <ClCompile Include="Tx10ubTcpStream.cpp" />
+    <ResourceCompile Include="..\DropPorter\DropPorterIcon.rc" />
+    <ClCompile Include="Tx10ubTls.cpp" />
+    <ClCompile Include="..\..\third_party\lwip\src\core\def.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\inet_chksum.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\init.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\ip.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\mem.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\memp.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\netif.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\pbuf.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\stats.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\sys.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\tcp.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\tcp_in.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\tcp_out.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\timeouts.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\ipv6\icmp6.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\ipv6\inet6.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\ipv6\ip6.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\ipv6\ip6_addr.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\third_party\lwip\src\core\ipv6\nd6.c"><WarningLevel>TurnOffAllWarnings</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

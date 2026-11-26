@@ -31,13 +31,15 @@
 
 ## Windows版のダウンロード
 
-Windows x64版をダウンロードできます。[DropPorter-0.1.0-Windows-x64.zip](https://github.com/dtstudio-git/DropPorter/releases/download/v0.1.0/DropPorter-0.1.0-Windows-x64.zip)
+Windows x64版をダウンロードできます。[DropPorter-0.2.0-Windows-x64.zip](https://github.com/dtstudio-git/DropPorter/releases/download/v0.2.0/DropPorter-0.2.0-Windows-x64.zip)
 
-ZIPを展開し、子機をPCに接続してから `DropPorter.exe` を起動してください。.NETのインストールは不要です。[起動手順とドライバーの案内](docs/DropPorter_Readme.txt)
+ZIPを展開し、子機をPCに接続してから `DropPorter.exe` を起動してください。[起動手順とドライバーの案内](docs/DropPorter_Readme.txt)
 
 ## 使用時のWi-Fi接続
 
 送受信を始めると、Windowsが管理者権限の許可を求めます。使用する子機のWi-Fi接続は送受信中に一時的に切れ、終了すると元の状態に戻ります。
+
+続けて送受信するときは、設定で「送受信のたびにWi-Fiを元に戻さない」をオンにすると、待ち時間を短くできます。アプリを閉じるか設定をオフにすると、子機は送受信を始める前の状態に戻ります。
 
 ## ビルド
 

@@ -20,6 +20,25 @@
   <!-- Document E8A5 / Folder E8B7: Microsoft Segoe Fluent Icons glyph contract. -->
   <Style x:Key="FieldIcon" TargetType="TextBlock" BasedOn="{StaticResource FieldValue}"><Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" /><Setter Property="FontSize" Value="{StaticResource FieldIconSize}" /><Setter Property="Margin" Value="{StaticResource FieldIconGap}" /><Setter Property="VerticalAlignment" Value="Center" /></Style>
   <Thickness x:Key="ChromePadding">24,12</Thickness><Thickness x:Key="ChromeSeparator">0,0,0,1</Thickness>
+  <!-- Settings E713: Microsoft Segoe Fluent Icons glyph contract. -->
+  <Style x:Key="ChromeIconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
+    <Setter Property="FontSize" Value="{StaticResource FieldIconSize}" />
+    <Setter Property="Margin" Value="{StaticResource NoGap}" />
+  </Style>
+  <sys:Double x:Key="SettingsWindowWidth">480</sys:Double>
+  <!-- File thumbnail (image/video preview, or the file icon) in the send and saved-file lists. -->
+  <sys:Double x:Key="FileThumbnailSize">40</sys:Double>
+  <Style x:Key="FileThumbnail" TargetType="local:FileThumbnail">
+    <Setter Property="Width" Value="{StaticResource FileThumbnailSize}" />
+    <Setter Property="Height" Value="{StaticResource FileThumbnailSize}" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="Margin" Value="{StaticResource FieldIconGap}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Thickness x:Key="SettingDescriptionGap">28,4,0,24</Thickness>
   <sys:Double x:Key="TabHeaderSize">22</sys:Double><sys:Double x:Key="TabMinWidth">104</sys:Double><sys:Double x:Key="TabMinHeight">48</sys:Double>
   <sys:Double x:Key="TabIndicatorHeight">3</sys:Double><Thickness x:Key="TabIndicatorInset">8,0</Thickness>
   <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
@@ -38,7 +57,10 @@
   <Style TargetType="local:TransferTabControl" BasedOn="{StaticResource {x:Type TabControl}}"><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="local:TransferTabControl">
     <Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
       <Border Padding="{StaticResource ChromePadding}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="{StaticResource ChromeSeparator}">
-        <TabPanel IsItemsHost="True" KeyboardNavigation.TabIndex="1" />
+        <DockPanel>
+          <ContentPresenter DockPanel.Dock="Right" Content="{TemplateBinding HeaderContent}" VerticalAlignment="Center" KeyboardNavigation.TabIndex="2" />
+          <TabPanel IsItemsHost="True" KeyboardNavigation.TabIndex="1" />
+        </DockPanel>
       </Border>
       <ContentPresenter Grid.Row="1" Content="{TemplateBinding RecoveryContent}" />
       <Border Grid.Row="2" Padding="{StaticResource PagePadding}"><ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent" /></Border>
@@ -71,12 +93,35 @@
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleName}" />
   </Style>
-  <Style x:Key="SendFileRow" TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+  <!-- Fixed row height (thumbnail plus ListItemPadding) so whole rows fill the list. -->
+  <sys:Double x:Key="FileRowHeight">56</sys:Double>
+  <!-- Exactly three rows plus the top and bottom CardBorderThickness: 3 × 56 + 2 × 1. -->
+  <sys:Double x:Key="FileListMaxHeight">170</sys:Double>
+  <Style x:Key="FileRow" TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Height" Value="{StaticResource FileRowHeight}" />
+    <Setter Property="Margin" Value="{StaticResource NoGap}" />
   </Style>
-  <Style x:Key="SendFileList" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
+  <!-- Send and saved-file lists: up to three files, scrolling one whole row at a time with no trailing gap. -->
+  <Style x:Key="FileList" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
     <Setter Property="MinHeight" Value="0" />
-    <Setter Property="ItemContainerStyle" Value="{StaticResource SendFileRow}" />
+    <Setter Property="MaxHeight" Value="{StaticResource FileListMaxHeight}" />
+    <Setter Property="Padding" Value="{StaticResource NoGap}" />
+    <Setter Property="BorderThickness" Value="{StaticResource CardBorderThickness}" />
+    <Setter Property="ItemContainerStyle" Value="{StaticResource FileRow}" />
+    <Setter Property="VirtualizingPanel.ScrollUnit" Value="Item" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBox">
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{StaticResource FieldCornerRadius}">
+            <ScrollViewer Padding="{StaticResource NoGap}" CanContentScroll="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Focusable="False">
+              <ItemsPresenter />
+            </ScrollViewer>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
   </Style>
   <Style x:Key="SectionHeading" TargetType="TextBlock" BasedOn="{StaticResource BodyText}"><Setter Property="FontSize" Value="{StaticResource SectionHeadingSize}" /><Setter Property="FontWeight" Value="Medium" /></Style>
   <!-- A pending decision that needs the user's attention. -->
@@ -109,6 +154,7 @@
   </Style>
   <Style x:Key="OfferDetails" TargetType="ScrollViewer"><Setter Property="MaxHeight" Value="{StaticResource ListMaxHeight}" /><Setter Property="VerticalScrollBarVisibility" Value="Auto" /><Setter Property="Margin" Value="{StaticResource SectionGap}" /></Style>
   <sys:Double x:Key="OfferPreviewMaxEdge">144</sys:Double>
+  <Thickness x:Key="OfferPreviewGap">0,0,24,16</Thickness>
   <Style x:Key="OfferPreview" TargetType="Image"><Setter Property="MaxWidth" Value="{StaticResource OfferPreviewMaxEdge}" /><Setter Property="MaxHeight" Value="{StaticResource OfferPreviewMaxEdge}" /><Setter Property="Stretch" Value="Uniform" /><Setter Property="StretchDirection" Value="DownOnly" /><Setter Property="HorizontalAlignment" Value="Left" /></Style>
   <BooleanToVisibilityConverter x:Key="Visible" />
   <Style TargetType="local:StatusLine">

@@ -13,4 +13,14 @@ public sealed class TransferTabControl : TabControl
         get => (UIElement?)GetValue(RecoveryContentProperty);
         set => SetValue(RecoveryContentProperty, value);
     }
+
+    // Shown at the right end of the tab header row.
+    public static readonly DependencyProperty HeaderContentProperty =
+        DependencyProperty.Register(nameof(HeaderContent), typeof(UIElement), typeof(TransferTabControl));
+
+    public UIElement? HeaderContent
+    {
+        get => (UIElement?)GetValue(HeaderContentProperty);
+        set => SetValue(HeaderContentProperty, value);
+    }
 }

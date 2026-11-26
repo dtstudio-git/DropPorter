@@ -132,7 +132,7 @@ wire::CodecResult<ScheduleDecision> inspect_owl_multicast_schedule(
 
     const auto& position = availability.value();
     const auto guard_delay = owl_guard_delay(position, multicast_guard_us);
-    if (position.sequence_slot != 0 && position.sequence_slot != 10) {
+    if (!owl_multicast_slot(position.sequence_slot)) {
         return wire::CodecResult<ScheduleDecision>::success(
             {position, ScheduleReason::not_multicast_slot, guard_delay});
     }

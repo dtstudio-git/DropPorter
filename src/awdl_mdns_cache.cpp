@@ -130,7 +130,8 @@ Snapshot Cache::endpoints(std::uint64_t now) const {
             if(result.endpoints.size()==capacity){result.truncated=true;return result;}
             result.endpoints.push_back({ptr.peer,*selected_service,*ptr.record.target,*srv.record.target,address,srv.record.port,
                 srv.record.priority,srv.record.weight,txt.record.text,
-                std::min({ptr.expires_at_us,srv.expires_at_us,txt.expires_at_us,addr.expires_at_us})});
+                std::min({ptr.expires_at_us,srv.expires_at_us,txt.expires_at_us,addr.expires_at_us}),
+                {ptr.received_at_us,srv.received_at_us,txt.received_at_us,addr.received_at_us}});
         }
     }
     return result;

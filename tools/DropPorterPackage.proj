@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Package" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <PackageRoot Condition="'$(PackageRoot)'==''">$(MSBuildThisFileDirectory)..\artifacts\DropPorter-0.1.0-Windows-x64\</PackageRoot>
+    <PackageRoot Condition="'$(PackageRoot)'==''">$(MSBuildThisFileDirectory)..\out\package\DropPorter-Windows-x64\</PackageRoot>
     <PublishRoot>$(MSBuildThisFileDirectory)..\ui\DropPorter.Wpf\obj\DropPorterPackage\</PublishRoot>
   </PropertyGroup>
   <Target Name="Build">

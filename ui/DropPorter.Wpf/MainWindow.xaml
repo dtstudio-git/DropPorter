@@ -21,6 +21,9 @@
   </Window.Resources>
   <Window.TaskbarItemInfo><TaskbarItemInfo x:Name="Taskbar" /></Window.TaskbarItemInfo>
   <local:TransferTabControl x:Name="TransferTabs">
+    <local:TransferTabControl.HeaderContent>
+      <Button Content="&#xE713;" Style="{StaticResource ChromeIconButton}" ToolTip="設定" AutomationProperties.Name="設定" Click="OpenSettings" />
+    </local:TransferTabControl.HeaderContent>
     <local:TransferTabControl.RecoveryContent>
       <Border x:Name="RecoveryNotice" Style="{StaticResource RecoveryBanner}" Visibility="Collapsed" AutomationProperties.Name="Wi-Fiの復旧">
         <Grid>
@@ -55,11 +58,15 @@
           </StackPanel>
           <TextBlock Text="ファイルを選ぶか、ここへドラッグしてください。" Style="{StaticResource FieldSecondary}" Visibility="{Binding Send.HasNoFile, Converter={StaticResource Visible}}" />
           </StackPanel>
-          <Button Grid.Column="2" Content="{Binding Send.FilePickLabel}" AutomationProperties.Name="送信するファイルを選ぶ" IsEnabled="{Binding Send.CanChoose}" Click="ChooseSendFile" VerticalAlignment="Center" />
+          <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+            <Button Content="追加" AutomationProperties.Name="送信するファイルを追加" IsEnabled="{Binding Send.CanChoose}" Visibility="{Binding Send.HasFile, Converter={StaticResource Visible}}" Click="AddSendFiles" />
+            <Button Content="{Binding Send.FilePickLabel}" AutomationProperties.Name="送信するファイルを選ぶ" IsEnabled="{Binding Send.CanChoose}" Click="ChooseSendFile" />
+          </StackPanel>
         </Grid></Border>
-        <ListBox Style="{StaticResource SendFileList}" ItemsSource="{Binding Send.SendFiles}" Visibility="{Binding Send.HasFile, Converter={StaticResource Visible}}" AutomationProperties.Name="送信するファイル一覧">
+        <ListBox Style="{StaticResource FileList}" ItemsSource="{Binding Send.SendFiles}" Visibility="{Binding Send.HasFile, Converter={StaticResource Visible}}" AutomationProperties.Name="送信するファイル一覧">
           <ListBox.ItemTemplate><DataTemplate><DockPanel ToolTip="{Binding}">
             <Button DockPanel.Dock="Right" Content="外す" AutomationProperties.Name="このファイルを外す" IsEnabled="{Binding DataContext.Send.CanChoose, RelativeSource={RelativeSource AncestorType=ListBox}}" Click="RemoveSendFile" />
+            <local:FileThumbnail DockPanel.Dock="Left" Path="{Binding}" Style="{StaticResource FileThumbnail}" />
             <StackPanel VerticalAlignment="Center">
               <TextBlock Text="{Binding Converter={StaticResource PathPart}, ConverterParameter=Name}" Style="{StaticResource FieldValue}" />
               <TextBlock Text="{Binding Converter={StaticResource PathPart}, ConverterParameter=Folder}" Style="{StaticResource FieldSecondary}" />
@@ -101,17 +108,20 @@
         <StackPanel Visibility="{Binding Receive.HasPeer, Converter={StaticResource Visible}}">
           <TextBlock Text="送信者" Style="{StaticResource Label}" /><TextBlock Text="{Binding Receive.Peer}" Style="{StaticResource BodyText}" />
         </StackPanel>
-        <Border Style="{StaticResource AttentionCard}" Visibility="{Binding Receive.IsIncoming, Converter={StaticResource Visible}}" AutomationProperties.Name="受信の確認"><StackPanel>
-          <StackPanel Margin="{StaticResource SectionGap}" Visibility="{Binding Receive.HasOfferPreview, Converter={StaticResource Visible}}">
+        <Border Style="{StaticResource AttentionCard}" Visibility="{Binding Receive.IsIncoming, Converter={StaticResource Visible}}" AutomationProperties.Name="受信の確認"><Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+          <StackPanel Margin="{StaticResource OfferPreviewGap}" Visibility="{Binding Receive.HasOfferPreview, Converter={StaticResource Visible}}">
             <TextBlock Text="プレビュー" Style="{StaticResource Label}" />
             <Image Source="{Binding Receive.OfferPreview}" Style="{StaticResource OfferPreview}" AutomationProperties.Name="受信依頼のプレビュー" />
           </StackPanel>
-          <StackPanel Margin="{StaticResource SectionGap}">
-            <TextBlock Text="{Binding Receive.OfferFileCount, StringFormat={}{0}件}" Style="{StaticResource FieldValue}" />
-            <TextBlock Text="{Binding Receive.OfferSize}" Style="{StaticResource CaptionText}" />
+          <StackPanel Grid.Column="1">
+            <StackPanel Margin="{StaticResource SectionGap}">
+              <TextBlock Text="{Binding Receive.OfferFileCount, StringFormat={}{0}件}" Style="{StaticResource FieldValue}" />
+              <TextBlock Text="{Binding Receive.OfferSize}" Style="{StaticResource CaptionText}" />
+            </StackPanel>
+            <TextBlock Text="ファイル" Style="{StaticResource Label}" /><ScrollViewer Style="{StaticResource OfferDetails}"><TextBlock Text="{Binding Receive.Details}" Style="{StaticResource FieldValue}" /></ScrollViewer>
           </StackPanel>
-          <TextBlock Text="ファイル" Style="{StaticResource Label}" /><ScrollViewer Style="{StaticResource OfferDetails}"><TextBlock Text="{Binding Receive.Details}" Style="{StaticResource FieldValue}" /></ScrollViewer>
-        </StackPanel></Border>
+        </Grid></Border>
         <StackPanel Visibility="{Binding Receive.ShowRegular, Converter={StaticResource Visible}}">
           <ContentControl Content="{Binding Receive}" ContentTemplate="{StaticResource TransferProgress}" />
           <Border Style="{StaticResource ValueField}" Visibility="{Binding Receive.ShowDetails, Converter={StaticResource Visible}}" AutomationProperties.Name="受信の詳細"><TextBlock Text="{Binding Receive.Details}" Style="{StaticResource FieldValue}" /></Border>
@@ -119,11 +129,14 @@
         </StackPanel>
         <StackPanel Visibility="{Binding Receive.HasSavedFiles, Converter={StaticResource Visible}}">
         <TextBlock Text="保存したファイル" Style="{StaticResource Label}" />
-        <ListBox ItemsSource="{Binding Receive.Items}" SelectedIndex="{Binding Receive.Selected, Mode=TwoWay}" SelectionChanged="SavedFileChanged" MouseDoubleClick="SavedFileDoubleClick" AutomationProperties.Name="保存したファイル">
-          <ListBox.ItemTemplate><DataTemplate><StackPanel ToolTip="{Binding}">
-            <TextBlock Text="{Binding Converter={StaticResource PathPart}, ConverterParameter=Name}" Style="{StaticResource FieldValue}" />
-            <TextBlock Text="{Binding Converter={StaticResource PathPart}, ConverterParameter=Folder}" Style="{StaticResource FieldSecondary}" />
-          </StackPanel></DataTemplate></ListBox.ItemTemplate>
+        <ListBox Style="{StaticResource FileList}" ItemsSource="{Binding Receive.Items}" SelectedIndex="{Binding Receive.Selected, Mode=TwoWay}" SelectionChanged="SavedFileChanged" MouseDoubleClick="SavedFileDoubleClick" AutomationProperties.Name="保存したファイル">
+          <ListBox.ItemTemplate><DataTemplate><DockPanel ToolTip="{Binding}">
+            <local:FileThumbnail DockPanel.Dock="Left" Path="{Binding}" Style="{StaticResource FileThumbnail}" />
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{Binding Converter={StaticResource PathPart}, ConverterParameter=Name}" Style="{StaticResource FieldValue}" />
+              <TextBlock Text="{Binding Converter={StaticResource PathPart}, ConverterParameter=Folder}" Style="{StaticResource FieldSecondary}" />
+            </StackPanel>
+          </DockPanel></DataTemplate></ListBox.ItemTemplate>
         </ListBox>
         </StackPanel>
       </StackPanel></ScrollViewer></Border>

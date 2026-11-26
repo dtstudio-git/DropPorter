@@ -57,7 +57,9 @@ public partial class MainWindow : Window
         {
             session = Native.DD_Create(new WindowInteropHelper(this).Handle);
             if (session == 0) throw new InvalidOperationException("送受信の準備を開始できませんでした。");
-            receiveNotifications.Register();
+            // Registration can take over a second on a cold start; show the window first.
+            // Until then Update() skips toasts, and the next refresh shows a pending offer.
+            ContentRendered += RegisterNotifications;
             recoveryRequest = Native.Text(session, TransferMode.Send, TextField.RecoveryRequestPath);
             Refresh(); timer.Start();
         }
@@ -66,6 +68,11 @@ public partial class MainWindow : Window
             MessageBox.Show(this, "Drop Porterを起動できませんでした。配布ファイルをすべて展開し直してから開いてください。",
                 "Drop Porter", MessageBoxButton.OK, MessageBoxImage.Error); Close();
         }
+    }
+    private void RegisterNotifications(object? sender, EventArgs e)
+    {
+        ContentRendered -= RegisterNotifications;
+        if (session != 0) receiveNotifications.Register();
     }
     private void Refresh()
     {
@@ -133,6 +140,19 @@ public partial class MainWindow : Window
 
     private void UpdateRecoveryNotice()
     {
+        // Restoring the Wi-Fi state kept for further transfers (on close, or after turning the setting off).
+        var restoringKept = session != 0 && Native.DD_Value(session, TransferMode.Send, ValueKind.RestoringRadio) == 1;
+        if (restoringKept)
+        {
+            RecoveryNotice.Visibility = Visibility.Visible;
+            RecoveryButton.Visibility = DismissRecoveryButton.Visibility = Visibility.Collapsed;
+            RecoveryDriverHelp.Visibility = Visibility.Collapsed;
+            RecoveryStatus.Text = "Wi-Fiを元に戻しています。";
+            RecoveryStatusLine.IsBusy = true;
+            UpdateTaskbar();
+            TransferTabs.IsEnabled = false;
+            return;
+        }
         var hasRequest = recoveryRequest.Length != 0;
         if (session != 0 && hasRequest && !recoveringWifi && !transferWasActive &&
             Environment.TickCount64 >= nextWifiCheck)
@@ -244,6 +264,17 @@ public partial class MainWindow : Window
         var dialog = new OpenFileDialog { Multiselect = true, CheckFileExists = true };
         if (dialog.ShowDialog(this) == true) SetSendFiles(dialog.FileNames);
     }
+    private void AddSendFiles(object sender, RoutedEventArgs e)
+    {
+        if (!Send.CanChoose) return;
+        var dialog = new OpenFileDialog { Multiselect = true, CheckFileExists = true };
+        if (dialog.ShowDialog(this) != true) return;
+        // Keep the current order; a file already in the list is not added twice.
+        var files = Send.SendFiles.ToList();
+        foreach (var path in dialog.FileNames)
+            if (!files.Contains(path, StringComparer.OrdinalIgnoreCase)) files.Add(path);
+        SetSendFiles(files);
+    }
     private void SetSendFiles(IEnumerable<string> paths) => Invoke(TransferMode.Send, BridgeCommand.SelectSendFiles, string.Join("\n", paths));
     private void RemoveSendFile(object sender, RoutedEventArgs e)
     {
@@ -335,6 +366,12 @@ public partial class MainWindow : Window
         SetSendFiles(paths);
     }
     private void OpenFolder(object sender, RoutedEventArgs e) => Invoke(TransferMode.Receive, BridgeCommand.OpenFolder);
+    private void OpenSettings(object sender, RoutedEventArgs e)
+    {
+        if (session == 0) return;
+        new SettingsWindow(session) { Owner = this }.ShowDialog();
+        Refresh();
+    }
     private void WindowClosing(object? sender, CancelEventArgs e)
     {
         if (recoveringWifi) { e.Cancel = true; return; }

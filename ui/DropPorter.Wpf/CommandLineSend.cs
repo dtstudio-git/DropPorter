@@ -49,6 +49,15 @@ internal static class CommandLineSend
                     Command(BridgeCommand.Poll);
                 }
             }
+            // Restore a Wi-Fi state kept for further transfers before this process exits.
+            if (Command(BridgeCommand.RequestClose) != 1)
+            {
+                while (Value(ValueKind.TransferActive) == 1)
+                {
+                    await Task.Delay(150);
+                    Command(BridgeCommand.Poll);
+                }
+            }
             Native.DD_Destroy(session);
         }
     }

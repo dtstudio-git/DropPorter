@@ -1,10 +1,10 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="BuildNative">
-    <MSBuild Projects="$(MSBuildThisFileDirectory)DropPorterRuntime.vcxproj;$(MSBuildThisFileDirectory)Tx10ubReceiveWorker.vcxproj" Properties="Configuration=Release;Platform=x64" />
-    <MSBuild Projects="$(MSBuildThisFileDirectory)Tx10ubProbe.vcxproj" Properties="Configuration=Release;Platform=x64;EnableActionExperiment=true;EnableAwdlFormatExperiment=true" />
-    <MSBuild Projects="$(MSBuildThisFileDirectory)DropPorterBridge.vcxproj" Properties="Configuration=Release;Platform=x64" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)DropPorter\DropPorterRuntime.vcxproj;$(MSBuildThisFileDirectory)Tx10ub\Tx10ubReceiveWorker.vcxproj" Properties="Configuration=Release;Platform=x64" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)Tx10ub\Tx10ubProbe.vcxproj" Properties="Configuration=Release;Platform=x64;EnableActionExperiment=true;EnableAwdlFormatExperiment=true" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)DropPorter\DropPorterBridge.vcxproj" Properties="Configuration=Release;Platform=x64" />
   </Target>
   <Target Name="Build" DependsOnTargets="BuildNative">
-    <Exec Command="dotnet build &quot;$(MSBuildThisFileDirectory)..\ui\DropPorter.Wpf\DropPorter.Wpf.csproj&quot; -c Release" />
+    <Exec Command="dotnet build &quot;$(MSBuildThisFileDirectory)..\ui\DropPorter.Wpf\DropPorter.Wpf.csproj&quot; -c Release --self-contained true" />
   </Target>
 </Project>

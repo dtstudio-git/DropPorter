@@ -7,6 +7,8 @@
 
 namespace awdlwin::discovery {
 
+inline constexpr bool owl_multicast_slot(unsigned slot) noexcept { return slot==0||slot==10; }
+
 // A caller-supplied peer channel schedule and its phase relative to the local
 // monotonic clock. The offset is never inferred from a discovery packet.
 struct PeerSchedule {
